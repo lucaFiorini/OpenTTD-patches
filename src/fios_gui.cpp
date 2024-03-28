@@ -31,6 +31,7 @@
 #include "gamelog.h"
 #include "vehicle_base.h"
 #include <string>
+#include <sstream>
 #include <fstream>
 #include <streambuf>
 
@@ -754,7 +755,7 @@ public:
 
 			case WID_SL_LOAD_BUTTON: {
 				if (this->selected == nullptr || _load_check_data.HasErrors()) break;
-
+				 
 				_file_to_saveload.Set(*this->selected);
 
 				if (this->abstract_filetype == FT_HEIGHTMAP) {
@@ -762,13 +763,17 @@ public:
 					ShowHeightmapLoad();
 				}else if (this->abstract_filetype == FT_ORDERLIST) {
 
-					std::ifstream t(this->selected->name);
-					std::stringstream buffer;
-					buffer << t.rdbuf();
+					FILE * file = FioFOpenFile(this->selected->name, "r", NO_DIRECTORY);
+					
+					if (file != nullptr) {
+						std::ifstream t(file);
+						std::stringstream buffer;
+						buffer << t.rdbuf();
 
-					veh->orders->FromJSONString(veh, buffer.str());
+						veh->orders->FromJSONString(veh, buffer.str());
 
-					this->Close();
+						this->Close();
+					}
 
 				} else if (!_load_check_data.HasNewGrfs() || _load_check_data.grf_compatibility != GLC_NOT_FOUND || _settings_client.gui.UserIsAllowedToChangeNewGRFs()) {
 					_switch_mode = (_game_mode == GM_EDITOR) ? SM_LOAD_SCENARIO : SM_LOAD_GAME;
