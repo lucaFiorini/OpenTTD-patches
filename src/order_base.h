@@ -1049,7 +1049,7 @@ public:
 	void DebugCheckSanity() const;
 #endif
 	bool CheckOrderListIndexing() const;
-
+	
 	inline std::vector<DispatchSchedule> &GetScheduledDispatchScheduleSet() { return this->dispatch_schedules; }
 	inline const std::vector<DispatchSchedule> &GetScheduledDispatchScheduleSet() const { return this->dispatch_schedules; }
 
