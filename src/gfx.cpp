@@ -2371,12 +2371,14 @@ bool AdjustGUIZoom(AdjustGUIZoomMode mode)
 
 void FontChanged()
 {
-	extern void FlushDeparturesWindowTextCaches();
-	FlushDeparturesWindowTextCaches();
-
 	UpdateRouteStepSpriteSize();
 
 	CheckForMissingGlyphs();
+
+	/* Call this after character widths have been updated in LoadStringWidthTable via CheckForMissingGlyphs. */
+	extern void FlushDeparturesWindowTextCaches();
+	FlushDeparturesWindowTextCaches();
+
 	SetupWidgetDimensions();
 	UpdateAllVirtCoords();
 	ReInitAllWindows(true);

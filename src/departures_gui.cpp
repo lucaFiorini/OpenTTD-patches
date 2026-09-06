@@ -166,6 +166,7 @@ protected:
 
 	uint GetScrollbarCapacity() const;
 	uint GetMinWidth() const;
+	static void CheckRecomputeDateWidth();
 	static void RecomputeDateWidth();
 	void DrawDeparturesListItems(const Rect &r) const;
 
@@ -778,11 +779,7 @@ public:
 		}
 
 		/* Recompute the minimum date display width if the cached one is no longer valid. */
-		if (cached_status_width == 0 ||
-				((cached_date_width == 0) != (!_settings_time.time_in_minutes && CalTime::IsCalendarFrozen())) ||
-				_settings_time.time_in_minutes != cached_date_display_method) {
-			this->RecomputeDateWidth();
-		}
+		DeparturesWindow::CheckRecomputeDateWidth();
 
 		/* We need to redraw the scrolling text in its new position. */
 		this->SetWidgetDirty(WID_DB_LIST);
@@ -900,7 +897,11 @@ public:
 			this->SetWidgetDisabledState(WID_DB_SHOW_TIMES, !_settings_time.time_in_minutes);
 			this->SetupValues();
 			this->ReInit();
-			if (_pause_mode.Any()) this->OnGameTick();
+			if (_pause_mode.Any()) {
+				this->OnGameTick();
+			} else {
+				DeparturesWindow::CheckRecomputeDateWidth();
+			}
 		}
 	}
 
@@ -979,6 +980,15 @@ void UpdateDeparturesWindowVehicleFilter(const OrderList *order_list, bool remov
 				static_cast<DeparturesWindow *>(w)->UpdateVehicleFilter(order_list, remove);
 			}
 		}
+	}
+}
+
+void DeparturesWindow::CheckRecomputeDateWidth()
+{
+	if (cached_status_width == 0 ||
+			((cached_date_width == 0) != (!_settings_time.time_in_minutes && CalTime::IsCalendarFrozen())) ||
+			_settings_time.time_in_minutes != cached_date_display_method) {
+		DeparturesWindow::RecomputeDateWidth();
 	}
 }
 
