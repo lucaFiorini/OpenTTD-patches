@@ -631,7 +631,6 @@ STR_GRAPH_LAST_24_MONTHS                                        :{TINY_FONT}{BLA
 STR_GRAPH_LAST_24_QUARTERS                                      :{TINY_FONT}{BLACK}6 years (quarterly)
 STR_GRAPH_LAST_24_YEARS                                         :{TINY_FONT}{BLACK}24 years (yearly)
 
-STR_GRAPH_TOGGLE_RANGE                                          :Toggle graph for this data range
 STR_GRAPH_SELECT_SCALE                                          :Change horizontal scale of graph
 
 STR_GRAPH_CARGO_PAYMENT_RATES_CAPTION                           :{WHITE}Cargo Payment Rates
@@ -1660,12 +1659,12 @@ STR_CONFIG_SETTING_TREE_PLACER_NONE                             :None
 STR_CONFIG_SETTING_TREE_PLACER_ORIGINAL                         :Original
 STR_CONFIG_SETTING_TREE_PLACER_IMPROVED                         :Improved
 
-STR_CONFIG_SETTING_ROAD_SIDE                                    :Road vehicles: {STRING}
-STR_CONFIG_SETTING_ROAD_SIDE_HELPTEXT                           :Choose the driving side
+STR_CONFIG_SETTING_ROAD_SIDE                                    :Road vehicle driving side: {STRING}
+STR_CONFIG_SETTING_ROAD_SIDE_HELPTEXT                           :Choose the road vehicle driving side.{}This can also affect signal side and semaphore graphics.{}It may require reloading the game for a change to take full effect
 
 ###length 2
-STR_CONFIG_SETTING_ROAD_SIDE_LEFT                               :Drive on left
-STR_CONFIG_SETTING_ROAD_SIDE_RIGHT                              :Drive on right
+STR_CONFIG_SETTING_ROAD_SIDE_LEFT                               :Left
+STR_CONFIG_SETTING_ROAD_SIDE_RIGHT                              :Right
 
 STR_CONFIG_SETTING_HEIGHTMAP_ROTATION                           :Heightmap rotation: {STRING}
 STR_CONFIG_SETTING_HEIGHTMAP_ROTATION_TOOLTIP                   :Choose which way the heightmap image is rotated to fit into the game world
@@ -5361,6 +5360,10 @@ STR_ERROR_BRIDGE_TOO_LOW_FOR_BUOY                               :bridge is {HEIG
 STR_ERROR_BRIDGE_TOO_LOW_FOR_RAIL_WAYPOINT                      :bridge is {HEIGHT} too low for rail waypoint
 STR_ERROR_BRIDGE_TOO_LOW_FOR_ROAD_WAYPOINT                      :bridge is {HEIGHT} too low for road waypoint
 STR_ERROR_BRIDGE_TOO_LOW_FOR_LOCK                               :bridge is {HEIGHT} too low for lock
+STR_ERROR_BRIDGE_TOO_LOW_FOR_TRAIN_DEPOT                        :bridge is {HEIGHT} too low for train depot
+STR_ERROR_BRIDGE_TOO_LOW_FOR_ROADVEH_DEPOT                      :bridge is {HEIGHT} too low for road vehicle depot
+STR_ERROR_BRIDGE_TOO_LOW_FOR_SHIP_DEPOT                         :bridge is {HEIGHT} too low for ship depot
+STR_ERROR_BRIDGE_TOO_LOW_FOR_OBJECT                             :bridge is {HEIGHT} too low for object
 
 # Tunnel related errors
 STR_ERROR_CAN_T_BUILD_TUNNEL_HERE                               :Can't build tunnel here...

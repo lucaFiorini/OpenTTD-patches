@@ -33,13 +33,13 @@ static NodeID _edge_next_edge;
 class SlLinkgraphEdge : public DefaultSaveLoadHandler<SlLinkgraphEdge, Node> {
 public:
 	static inline const SaveLoad description[] = {
-		    SLE_VAR(Edge, capacity,                 SLE_UINT32),
-		    SLE_VAR(Edge, usage,                    SLE_UINT32),
-		SLE_CONDVAR(Edge, travel_time_sum, SLE_UINT64, SaveLoadVersion::LinkgraphTravelTime, SaveLoadVersion::MaxVersion),
-		    SLE_VAR(Edge, last_unrestricted_update, SLE_INT32),
-		SLE_CONDVAR(Edge, last_restricted_update, SLE_INT32, SaveLoadVersion::LinkgraphRestrictedFlow, SaveLoadVersion::MaxVersion),
-		   SLEG_VAR("dest_node", _edge_dest_node, SLE_UINT16),
-		SLEG_CONDVAR("next_edge", _edge_next_edge, SLE_UINT16, SaveLoadVersion::MinVersion, SaveLoadVersion::LinkgraphEdges),
+		    SLE_VAR(Edge, capacity,                 VarTypes::U32),
+		    SLE_VAR(Edge, usage,                    VarTypes::U32),
+		SLE_CONDVAR(Edge, travel_time_sum, VarTypes::U64, SaveLoadVersion::LinkgraphTravelTime, SaveLoadVersion::MaxVersion),
+		    SLE_VAR(Edge, last_unrestricted_update, VarTypes::I32),
+		SLE_CONDVAR(Edge, last_restricted_update, VarTypes::I32, SaveLoadVersion::LinkgraphRestrictedFlow, SaveLoadVersion::MaxVersion),
+		   SLEG_VAR("dest_node", _edge_dest_node, VarTypes::U16),
+		SLEG_CONDVAR("next_edge", _edge_next_edge, VarTypes::U16, SaveLoadVersion::MinVersion, SaveLoadVersion::LinkgraphEdges),
 	};
 	static inline const SaveLoadCompatTable compat_description = _linkgraph_edge_sl_compat;
 
@@ -85,11 +85,11 @@ public:
 class SlLinkgraphNode : public DefaultSaveLoadHandler<SlLinkgraphNode, LinkGraph> {
 public:
 	static inline const SaveLoad description[] = {
-		SLE_CONDVAR(Node, xy, SLE_UINT32, SaveLoadVersion::LinkgraphLocationDisasterStore, SaveLoadVersion::MaxVersion),
-		    SLE_VAR(Node, supply,      SLE_UINT32),
-		    SLE_VAR(Node, demand,      SLE_UINT32),
-		    SLE_VAR(Node, station,     SLE_UINT16),
-		    SLE_VAR(Node, last_update, SLE_INT32),
+		SLE_CONDVAR(Node, xy, VarTypes::U32, SaveLoadVersion::LinkgraphLocationDisasterStore, SaveLoadVersion::MaxVersion),
+		    SLE_VAR(Node, supply,      VarTypes::U32),
+		    SLE_VAR(Node, demand,      VarTypes::U32),
+		    SLE_VAR(Node, station,     VarTypes::U16),
+		    SLE_VAR(Node, last_update, VarTypes::I32),
 		SLEG_STRUCTLIST("edges", SlLinkgraphEdge),
 	};
 	static inline const SaveLoadCompatTable compat_description = _linkgraph_node_sl_compat;
@@ -126,8 +126,8 @@ SaveLoadTable GetLinkGraphDesc()
 {
 	static const SaveLoad link_graph_desc[] = {
 		 SLE_VAR(LinkGraph, last_compression, VarFileType::I32 | VarMemType::I64),
-		SLEG_CONDVAR("num_nodes", _num_nodes, SLE_UINT16, SaveLoadVersion::MinVersion, SaveLoadVersion::SaveloadListLength),
-		 SLE_VAR(LinkGraph, cargo,            SLE_UINT8),
+		SLEG_CONDVAR("num_nodes", _num_nodes, VarTypes::U16, SaveLoadVersion::MinVersion, SaveLoadVersion::SaveloadListLength),
+		 SLE_VAR(LinkGraph, cargo,            VarTypes::U8),
 		SLEG_STRUCTLIST("nodes", SlLinkgraphNode),
 	};
 	return link_graph_desc;
@@ -169,19 +169,19 @@ public:
 SaveLoadTable GetLinkGraphJobDesc()
 {
 	static const SaveLoad job_desc[] = {
-		SLE_VAR2(LinkGraphJob, "linkgraph.recalc_interval",       settings.recalc_interval,       SLE_UINT16),
-		SLE_VAR2(LinkGraphJob, "linkgraph.recalc_time",           settings.recalc_time,           SLE_UINT16),
-		SLE_VAR2(LinkGraphJob, "linkgraph.distribution_pax",      settings.distribution_pax,      SLE_UINT8),
-		SLE_VAR2(LinkGraphJob, "linkgraph.distribution_mail",     settings.distribution_mail,     SLE_UINT8),
-		SLE_VAR2(LinkGraphJob, "linkgraph.distribution_armoured", settings.distribution_armoured, SLE_UINT8),
-		SLE_VAR2(LinkGraphJob, "linkgraph.distribution_default",  settings.distribution_default,  SLE_UINT8),
-		SLE_VAR2(LinkGraphJob, "linkgraph.accuracy",              settings.accuracy,              SLE_UINT8),
-		SLE_VAR2(LinkGraphJob, "linkgraph.demand_distance",       settings.demand_distance,       SLE_UINT8),
-		SLE_VAR2(LinkGraphJob, "linkgraph.demand_size",           settings.demand_size,           SLE_UINT8),
-		SLE_VAR2(LinkGraphJob, "linkgraph.short_path_saturation", settings.short_path_saturation, SLE_UINT8),
+		SLE_VAR2(LinkGraphJob, "linkgraph.recalc_interval",       settings.recalc_interval,       VarTypes::U16),
+		SLE_VAR2(LinkGraphJob, "linkgraph.recalc_time",           settings.recalc_time,           VarTypes::U16),
+		SLE_VAR2(LinkGraphJob, "linkgraph.distribution_pax",      settings.distribution_pax,      VarTypes::U8),
+		SLE_VAR2(LinkGraphJob, "linkgraph.distribution_mail",     settings.distribution_mail,     VarTypes::U8),
+		SLE_VAR2(LinkGraphJob, "linkgraph.distribution_armoured", settings.distribution_armoured, VarTypes::U8),
+		SLE_VAR2(LinkGraphJob, "linkgraph.distribution_default",  settings.distribution_default,  VarTypes::U8),
+		SLE_VAR2(LinkGraphJob, "linkgraph.accuracy",              settings.accuracy,              VarTypes::U8),
+		SLE_VAR2(LinkGraphJob, "linkgraph.demand_distance",       settings.demand_distance,       VarTypes::U8),
+		SLE_VAR2(LinkGraphJob, "linkgraph.demand_size",           settings.demand_size,           VarTypes::U8),
+		SLE_VAR2(LinkGraphJob, "linkgraph.short_path_saturation", settings.short_path_saturation, VarTypes::U8),
 
 		SLE_VAR2(LinkGraphJob, "join_date",                       join_tick,                      VarFileType::I32 | VarMemType::U64),
-		SLE_VAR(LinkGraphJob, link_graph.index, SLE_UINT16),
+		SLE_VAR(LinkGraphJob, link_graph.index, VarTypes::U16),
 		SLEG_STRUCT("linkgraph", SlLinkgraphJobProxy),
 	};
 

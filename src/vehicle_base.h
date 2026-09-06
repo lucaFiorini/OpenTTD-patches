@@ -25,6 +25,7 @@
 #include "base_consist.h"
 #include "newgrf_cache_check.h"
 #include "landscape.h"
+#include "newgrf_type.h"
 #include "network/network.h"
 #include "core/alignment.hpp"
 #include "sl/saveload_common.h"
@@ -553,7 +554,7 @@ public:
 	Direction GetMapImageDirection() const { return this->direction; }
 
 	const GRFFile *GetGRF() const;
-	uint32_t GetGRFID() const;
+	GrfID GetGRFID() const;
 
 	/**
 	 * Invalidates cached NewGRF variables
