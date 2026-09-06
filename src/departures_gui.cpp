@@ -994,13 +994,13 @@ void DeparturesWindow::RecomputeDateWidth()
 	cached_status_width = std::max((GetStringBoundingBox(STR_DEPARTURES_CANCELLED)).width, cached_status_width);
 	cached_status_width = std::max((GetStringBoundingBox(STR_DEPARTURES_SCHEDULED)).width, cached_status_width);
 
-	auto eval_tick = [&](StateTicks tick) {
+	auto eval_tick = [&](StringID tick_display_string, int64_t tick) {
 		auto params = MakeParameters(
 				TextColour::Orange,
-				STR_JUST_TT_TIME_ABS,
+				tick_display_string,
 				tick,
 				TextColour::Orange,
-				STR_JUST_TT_TIME_ABS,
+				tick_display_string,
 				tick);
 
 		cached_date_width = std::max(GetStringBoundingBox(GetStringWithArgs(STR_DEPARTURES_TIME, params)).width, cached_date_width);
@@ -1011,12 +1011,11 @@ void DeparturesWindow::RecomputeDateWidth()
 	};
 
 	if (_settings_time.time_in_minutes) {
-		StateTicks tick = _settings_time.FromTickMinutes(_settings_time.NowInTickMinutes().ToSameDayClockTime(GetBroadestHourDigitsValue(), (int)GetParamMaxDigits(2)));
-		eval_tick(tick);
+		eval_tick(STR_JUST_TIME_HHMM, (GetBroadestHourDigitsValue() * 100) + GetParamMaxDigits(2));
 	} else if (!CalTime::IsCalendarFrozen()) {
 		/* If the calendar is frozen, all dates are the same, so just don't show anything */
 		for (uint i = 0; i < 365; ++i) {
-			eval_tick(StateTicks{INT_MAX - (i * DAY_TICKS)});
+			eval_tick(STR_JUST_TT_TIME_ABS, INT_MAX - (i * DAY_TICKS));
 		}
 	}
 
