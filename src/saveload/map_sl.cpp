@@ -162,7 +162,7 @@ struct MAP2ChunkHandler : ChunkHandler {
 		for (TileIndex i(0); i != size;) {
 			SlCopy(buf.data(), MAP_SL_BUF_SIZE,
 				/* In those versions the m2 was 8 bits */
-				IsSavegameVersionBefore(SaveLoadVersion::BigMap) ? SLE_FILE_U8 | SLE_VAR_U16 : SLE_UINT16
+				IsSavegameVersionBefore(SaveLoadVersion::BigMap) ? VarFileType::U8 | VarMemType::U16 : SLE_UINT16
 			);
 			for (uint j = 0; j != MAP_SL_BUF_SIZE; j++) _m[i++].m2 = buf[j];
 		}

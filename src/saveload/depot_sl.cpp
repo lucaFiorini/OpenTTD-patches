@@ -22,10 +22,10 @@ namespace upstream_sl {
 static TownID _town_index;
 
 static const SaveLoad _depot_desc[] = {
-	 SLE_CONDVAR(Depot, xy, SLE_FILE_U16 | SLE_VAR_U32, SaveLoadVersion::MinVersion, SaveLoadVersion::MultipleRoadStops),
+	 SLE_CONDVAR(Depot, xy, VarFileType::U16 | VarMemType::U32, SaveLoadVersion::MinVersion, SaveLoadVersion::MultipleRoadStops),
 	 SLE_CONDVAR(Depot, xy, SLE_UINT32, SaveLoadVersion::MultipleRoadStops, SaveLoadVersion::MaxVersion),
 	SLEG_CONDVAR("town_index", _town_index, SLE_UINT16, SaveLoadVersion::MinVersion, SaveLoadVersion::UniqueDepotNames),
-	 SLE_CONDREF(Depot, town, REF_TOWN, SaveLoadVersion::UniqueDepotNames, SaveLoadVersion::MaxVersion),
+	 SLE_CONDREF(Depot, town, SLRefType::Town, SaveLoadVersion::UniqueDepotNames, SaveLoadVersion::MaxVersion),
 	 SLE_CONDVAR(Depot, town_cn, SLE_UINT16, SaveLoadVersion::UniqueDepotNames, SaveLoadVersion::MaxVersion),
 	SLE_CONDSTR(Depot, name, SLE_STR, 0, SaveLoadVersion::UniqueDepotNames, SaveLoadVersion::MaxVersion),
 	 SLE_CONDVAR(Depot, build_date, SLE_INT32, SaveLoadVersion::NewGRFDepotBuildDate, SaveLoadVersion::MaxVersion),

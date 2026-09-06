@@ -20,7 +20,7 @@
 namespace upstream_sl {
 
 static const SaveLoad _economy_desc[] = {
-	SLE_CONDVAR(Economy, old_max_loan_unround, SLE_FILE_I32 | SLE_VAR_I64, SaveLoadVersion::MinVersion, SaveLoadVersion::UnifyCurrency),
+	SLE_CONDVAR(Economy, old_max_loan_unround, VarFileType::I32 | VarMemType::I64, SaveLoadVersion::MinVersion, SaveLoadVersion::UnifyCurrency),
 	SLE_CONDVAR(Economy, old_max_loan_unround, SLE_INT64, SaveLoadVersion::UnifyCurrency, SaveLoadVersion::CumulatedInflation),
 	SLE_CONDVAR(Economy, old_max_loan_unround_fract, SLE_UINT16, SaveLoadVersion::CargoPaymentOverflow, SaveLoadVersion::CumulatedInflation),
 	SLE_CONDVAR(Economy, inflation_prices, SLE_UINT64, SaveLoadVersion::CumulatedInflation, SaveLoadVersion::MaxVersion),
@@ -58,7 +58,7 @@ struct ECMYChunkHandler : ChunkHandler {
 };
 
 static const SaveLoad _cargopayment_desc[] = {
-	    SLE_REF(CargoPayment, front,           REF_VEHICLE),
+	    SLE_REF(CargoPayment, front,           SLRefType::Vehicle),
 	    SLE_VAR(CargoPayment, route_profit,    SLE_INT64),
 	    SLE_VAR(CargoPayment, visual_profit,   SLE_INT64),
 	SLE_CONDVAR(CargoPayment, visual_transfer, SLE_INT64, SaveLoadVersion::CargoReservation, SaveLoadVersion::MaxVersion),

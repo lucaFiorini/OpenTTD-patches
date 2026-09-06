@@ -125,7 +125,7 @@ public:
 SaveLoadTable GetLinkGraphDesc()
 {
 	static const SaveLoad link_graph_desc[] = {
-		 SLE_VAR(LinkGraph, last_compression, SLE_VAR_I64 | SLE_FILE_I32),
+		 SLE_VAR(LinkGraph, last_compression, VarFileType::I32 | VarMemType::I64),
 		SLEG_CONDVAR("num_nodes", _num_nodes, SLE_UINT16, SaveLoadVersion::MinVersion, SaveLoadVersion::SaveloadListLength),
 		 SLE_VAR(LinkGraph, cargo,            SLE_UINT8),
 		SLEG_STRUCTLIST("nodes", SlLinkgraphNode),
@@ -180,7 +180,7 @@ SaveLoadTable GetLinkGraphJobDesc()
 		SLE_VAR2(LinkGraphJob, "linkgraph.demand_size",           settings.demand_size,           SLE_UINT8),
 		SLE_VAR2(LinkGraphJob, "linkgraph.short_path_saturation", settings.short_path_saturation, SLE_UINT8),
 
-		SLE_VAR2(LinkGraphJob, "join_date",                       join_tick,                      SLE_FILE_I32 | SLE_VAR_U64),
+		SLE_VAR2(LinkGraphJob, "join_date",                       join_tick,                      VarFileType::I32 | VarMemType::U64),
 		SLE_VAR(LinkGraphJob, link_graph.index, SLE_UINT16),
 		SLEG_STRUCT("linkgraph", SlLinkgraphJobProxy),
 	};
@@ -195,8 +195,8 @@ SaveLoadTable GetLinkGraphJobDesc()
 SaveLoadTable GetLinkGraphScheduleDesc()
 {
 	static const SaveLoad schedule_desc[] = {
-		SLE_REFRING(LinkGraphSchedule, schedule, REF_LINK_GRAPH),
-		SLE_REFRING(LinkGraphSchedule, running,  REF_LINK_GRAPH_JOB),
+		SLE_REFRING(LinkGraphSchedule, schedule, SLRefType::LinkGraph),
+		SLE_REFRING(LinkGraphSchedule, running,  SLRefType::LinkGraphJob),
 	};
 	return schedule_desc;
 }

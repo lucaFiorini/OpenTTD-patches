@@ -598,91 +598,125 @@ public:
 };
 
 /** Type of reference (#SLE_REF, #SLE_CONDREF). */
-enum SLRefType : uint8_t {
-	REF_ORDER          =  0, ///< Load/save a reference to an order.
-	REF_VEHICLE        =  1, ///< Load/save a reference to a vehicle.
-	REF_STATION        =  2, ///< Load/save a reference to a station.
-	REF_TOWN           =  3, ///< Load/save a reference to a town.
-	REF_VEHICLE_OLD    =  4, ///< Load/save an old-style reference to a vehicle (for pre-4.4 savegames).
-	REF_ROADSTOPS      =  5, ///< Load/save a reference to a bus/truck stop.
-	REF_ENGINE_RENEWS  =  6, ///< Load/save a reference to an engine renewal (autoreplace).
-	REF_CARGO_PACKET   =  7, ///< Load/save a reference to a cargo packet.
-	REF_ORDERLIST      =  8, ///< Load/save a reference to an orderlist.
-	REF_STORAGE        =  9, ///< Load/save a reference to a persistent storage.
-	REF_LINK_GRAPH     = 10, ///< Load/save a reference to a link graph.
-	REF_LINK_GRAPH_JOB = 11, ///< Load/save a reference to a link graph job.
+enum class SLRefType : uint8_t {
+	Vehicle = 1, ///< Load/save a reference to a vehicle.
+	Station = 2, ///< Load/save a reference to a station.
+	Town = 3, ///< Load/save a reference to a town.
+	OldVehicle = 4, ///< Load/save an old-style reference to a vehicle (for pre-4.4 savegames).
+	RoadStop = 5, ///< Load/save a reference to a bus/truck stop.
+	EngineRenew = 6, ///< Load/save a reference to an engine renewal (autoreplace).
+	CargoPacket = 7, ///< Load/save a reference to a cargo packet.
+	OrderList = 8, ///< Load/save a reference to an orderlist.
+	Storage = 9, ///< Load/save a reference to a persistent storage.
+	LinkGraph = 10, ///< Load/save a reference to a link graph.
+	LinkGraphJob = 11, ///< Load/save a reference to a link graph job.
+};
+
+/** The types/structures of data that can be stored in the file. */
+enum class VarFileType : uint8_t {
+	/* 4 bits allocated a maximum of 16 types for NumberType.
+	 * NOTE: the SLE_FILE_NNN values are stored in the savegame! */
+	/* Value 0 is used to mark end-of-header in tables. Do not use here! */
+	I8 = 1, ///< A 8 bit signed int.
+	U8 = 2, ///< A 8 bit unsigned int.
+	I16 = 3, ///< A 16 bit signed int.
+	U16 = 4, ///< A 16 bit unsigned int.
+	I32 = 5, ///< A 32 bit signed int.
+	U32 = 6, ///< A 32 bit unsigned int.
+	I64 = 7, ///< A 64 bit signed int.
+	U64 = 8, ///< A 64 bit unsigned int.
+	StringID = 9, ///< StringID offset into strings-array.
+	String = 10, ///< A string.
+	Struct = 11, ///< An arbitrary structure.
+	/* 4 more possible file-primitives */
+};
+
+/** The types/structures of data we have in memory. */
+enum class VarMemType : uint8_t {
+	/* 4 bits allocated a maximum of 16 types for NumberType */
+	Bool = 0, ///< A boolean value.
+	I8 = 1, ///< A 8 bit signed int.
+	U8 = 2, ///< A 8 bit unsigned int.
+	I16 = 3, ///< A 16 bit signed int.
+	U16 = 4, ///< A 16 bit unsigned int.
+	I32 = 5, ///< A 32 bit signed int.
+	U32 = 6, ///< A 32 bit unsigned int.
+	I64 = 7, ///< A 64 bit signed int.
+	U64 = 8, ///< A 64 bit unsigned int.
+	Null = 9, ///< useful to write zeros in savegame.
+	Str = 12, ///< string pointer
+	StrQ = 13, ///< string pointer enclosed in quotes
+	Name = 14, ///< old custom name to be converted to a string pointer
+	/* 1 more possible memory-primitives */
+};
+
+/** Container of a variable's characteristics about a variable's storage. */
+struct VarType {
+	VarFileType file{}; ///< The way of storing data in the file.
+	VarMemType mem{}; ///< The way of storing data in memory.
+	StringValidationSettings string_validation_settings{}; ///< Any settings related to validation of the strings.
+	SLRefType ref{}; ///< The reference type.
+
+	/** Create an empty \c VarType. */
+	constexpr VarType() {}
+
+	/**
+	 * Create a \c VarType with the given file and memory configurations.
+	 * @param file The file storage configuration.
+	 * @param mem The memory storage configuration.
+	 */
+	constexpr VarType(VarFileType file, VarMemType mem) : file(file), mem(mem) {}
+
+	/**
+	 * Create a `VarType` linking to a reference.
+	 * @param ref The reference.
+	 */
+	constexpr VarType(SLRefType ref) : ref(ref) {}
+
+	/**
+	 * Equality operator.
+	 * @param other The element to compare to.
+	 * @return \c true iff all elements of this and other are the same.
+	 */
+	constexpr bool operator==(const VarType &other) const = default;
+
+	/**
+	 * Transitional helper function to add a \c SaveLoadFlag to this type.
+	 * @param string_validation_setting The string_validation_setting to set.
+	 * @return A copy of this with the string_validation_setting set.
+	 */
+	constexpr VarType operator|(StringValidationSetting string_validation_setting) const
+	{
+		VarType copy = *this;
+		copy.string_validation_settings.Set(string_validation_setting);
+		return copy;
+	}
 };
 
 /**
- * VarTypes is the general bitmasked magic type that tells us
- * certain characteristics about the variable it refers to. For example
- * SLE_FILE_* gives the size(type) as it would be in the savegame and
- * SLE_VAR_* the size(type) as it is in memory during runtime. These are
- * the first 8 bits (0-3 SLE_FILE, 4-7 SLE_VAR).
- * Bits 8-15 are reserved for various flags as explained below
+ * Transitional helper function to combine a file and memory storage configuration.
+ * @param file The file configuration.
+ * @param mem The memory configuration.
+ * @return The created \c VarType.
  */
-enum VarTypes : uint16_t {
-	/* 4 bits allocated a maximum of 16 types for NumberType.
-	 * NOTE: the SLE_FILE_NNN values are stored in the savegame! */
-	SLE_FILE_END      =  0, ///< Used to mark end-of-header in tables.
-	SLE_FILE_I8       =  1,
-	SLE_FILE_U8       =  2,
-	SLE_FILE_I16      =  3,
-	SLE_FILE_U16      =  4,
-	SLE_FILE_I32      =  5,
-	SLE_FILE_U32      =  6,
-	SLE_FILE_I64      =  7,
-	SLE_FILE_U64      =  8,
-	SLE_FILE_STRINGID =  9, ///< StringID offset into strings-array
-	SLE_FILE_STRING   = 10,
-	SLE_FILE_STRUCT   = 11,
-	/* 4 more possible file-primitives */
+constexpr VarType operator|(VarFileType file, VarMemType mem)
+{
+	return {file, mem};
+}
 
-	SLE_FILE_TYPE_MASK = 0xf, ///< Mask to get the file-type (and not any flags).
-	SLE_FILE_HAS_LENGTH_FIELD = 1 << 4, ///< Bit stored in savegame to indicate field has a length field for each entry.
-
-	/* 4 bits allocated a maximum of 16 types for NumberType */
-	SLE_VAR_BL    =  0 << 4,
-	SLE_VAR_I8    =  1 << 4,
-	SLE_VAR_U8    =  2 << 4,
-	SLE_VAR_I16   =  3 << 4,
-	SLE_VAR_U16   =  4 << 4,
-	SLE_VAR_I32   =  5 << 4,
-	SLE_VAR_U32   =  6 << 4,
-	SLE_VAR_I64   =  7 << 4,
-	SLE_VAR_U64   =  8 << 4,
-	SLE_VAR_NULL  =  9 << 4, ///< useful to write zeros in savegame.
-	SLE_VAR_STR   = 12 << 4, ///< string pointer
-	SLE_VAR_STRQ  = 13 << 4, ///< string pointer enclosed in quotes
-	SLE_VAR_NAME  = 14 << 4, ///< old custom name to be converted to a string pointer
-	/* 1 more possible memory-primitives */
-
-	/* Default combinations of variables. As savegames change, so can variables
-	 * and thus it is possible that the saved value and internal size do not
-	 * match and you need to specify custom combo. The defaults are listed here */
-	SLE_BOOL         = SLE_FILE_I8  | SLE_VAR_BL,
-	SLE_INT8         = SLE_FILE_I8  | SLE_VAR_I8,
-	SLE_UINT8        = SLE_FILE_U8  | SLE_VAR_U8,
-	SLE_INT16        = SLE_FILE_I16 | SLE_VAR_I16,
-	SLE_UINT16       = SLE_FILE_U16 | SLE_VAR_U16,
-	SLE_INT32        = SLE_FILE_I32 | SLE_VAR_I32,
-	SLE_UINT32       = SLE_FILE_U32 | SLE_VAR_U32,
-	SLE_INT64        = SLE_FILE_I64 | SLE_VAR_I64,
-	SLE_UINT64       = SLE_FILE_U64 | SLE_VAR_U64,
-	SLE_STRINGID     = SLE_FILE_STRINGID | SLE_VAR_U32,
-	SLE_STR          = SLE_FILE_STRING   | SLE_VAR_STR,
-	SLE_STRQ         = SLE_FILE_STRING   | SLE_VAR_STRQ,
-	SLE_NAME         = SLE_FILE_STRINGID | SLE_VAR_NAME,
-
-	/* 8 bits allocated for a maximum of 8 flags
-	 * Flags directing saving/loading of a variable */
-	SLF_ALLOW_CONTROL   = 1 << 8, ///< Allow control codes in the strings.
-	SLF_ALLOW_NEWLINE   = 1 << 9, ///< Allow new lines in the strings.
-	SLF_REPLACE_TABCRLF = 1 << 10, ///< Replace tabs, cr and lf in the string with spaces.
-	SLF_GLOBAL          = 1 << 11, ///< This is a global variable (using SaveLoad::address), instead of a struct field (using SaveLoad::offset).
-};
-
-typedef uint16_t VarType;
+constexpr VarType SLE_BOOL{ VarFileType::I8, VarMemType::Bool }; ///< Store a boolean (as int8).
+constexpr VarType SLE_INT8{ VarFileType::I8, VarMemType::I8 }; ///< Store a 8 bits signed int.
+constexpr VarType SLE_UINT8{ VarFileType::U8, VarMemType::U8 }; ///< Store a 8 bits unsigned int.
+constexpr VarType SLE_INT16{ VarFileType::I16, VarMemType::I16 }; ///< Store a 16 bits signed int.
+constexpr VarType SLE_UINT16{ VarFileType::U16, VarMemType::U16 }; ///< Store a 16 bits unsigned int.
+constexpr VarType SLE_INT32{ VarFileType::I32, VarMemType::I32 }; ///< Store a 32 bits signed int.
+constexpr VarType SLE_UINT32{ VarFileType::U32, VarMemType::U32 }; ///< Store a 32 bits unsigned int.
+constexpr VarType SLE_INT64{ VarFileType::I64, VarMemType::I64 }; ///< Store a 64 bits signed int.
+constexpr VarType SLE_UINT64{ VarFileType::U64, VarMemType::U64 }; ///< Store a 64 bits unsigned int.
+constexpr VarType SLE_STRINGID{ VarFileType::StringID, VarMemType::U32 }; ///< Store a StringID.
+constexpr VarType SLE_STR{ VarFileType::String, VarMemType::Str }; ///< Store string.
+constexpr VarType SLE_STRQ{ VarFileType::String, VarMemType::StrQ }; ///< Store a string with quotes.
+constexpr VarType SLE_NAME{ VarFileType::StringID, VarMemType::Name }; ///< A string stored in the custom string array.
 
 /** Type of data saved. */
 enum class SaveLoadType : uint8_t {
@@ -709,10 +743,16 @@ enum class SaveLoadType : uint8_t {
 
 typedef void *SaveLoadAddrProc(void *base, size_t extra);
 
+enum class SaveLoadFlag : uint8_t {
+	Global,
+};
+using SaveLoadFlags = EnumBitSet<SaveLoadFlag, uint8_t>;
+
 /** SaveLoad type struct. Do NOT use this directly but use the SLE_ macros defined just below! */
 struct SaveLoad {
 	std::string name;    ///< Name of this field (optional, used for tables).
 	SaveLoadType cmd;    ///< The action to take with the saved/loaded type, All types need different action.
+	SaveLoadFlags flags; ///< Flags.
 	VarType conv;        ///< Type of the variable to be saved; this field combines both FileVarType and MemVarType.
 	uint16_t length;     ///< (Conditional) length of the variable (eg. arrays) (max array size is 65536 elements).
 	SaveLoadVersion version_from;   ///< Save/load the variable starting from this savegame version.
@@ -721,9 +761,9 @@ struct SaveLoad {
 		/* NOTE: This element either denotes the address of the variable for a global
 		 * variable, or the offset within a struct which is then bound to a variable
 		 * during runtime. Decision on which one to use is controlled by the function
-		 * that is called to save it. address: SLF_GLOBAL set, offset: SLF_GLOBAL clear */
-		void *address; ///< address of variable (SLF_GLOBAL set)
-		size_t offset; ///< offset of variable in the struct (SLF_GLOBAL clear)
+		 * that is called to save it. address: SaveLoadFlag::Global set, offset: SaveLoadFlag::Global clear */
+		void *address; ///< address of variable (SaveLoadFlag::Global set)
+		size_t offset; ///< offset of variable in the struct (SaveLoadFlag::Global clear)
 	};
 	std::shared_ptr<SaveLoadHandler> handler; ///< Custom handler for Save/Load procs.
 };
@@ -744,58 +784,26 @@ struct SaveLoadCompat {
 };
 
 /**
- * Get the NumberType of a setting. This describes the integer type
- * as it is represented in memory
- * @param type VarType holding information about the variable-type
- * @return the SLE_VAR_* part of a variable-type description
- */
-inline constexpr VarType GetVarMemType(VarType type)
-{
-	return type & 0xF0; // GB(type, 4, 4) << 4;
-}
-
-/**
- * Get the FileType of a setting. This describes the integer type
- * as it is represented in a savegame/file
- * @param type VarType holding information about the file-type
- * @return the SLE_FILE_* part of a variable-type description
- */
-inline constexpr VarType GetVarFileType(VarType type)
-{
-	return type & 0xF; // GB(type, 0, 4);
-}
-
-/**
- * Check if the given saveload type is a numeric type.
- * @param conv the type to check
- * @return True if it's a numeric type.
- */
-inline constexpr bool IsNumericType(VarType conv)
-{
-	return GetVarMemType(conv) <= SLE_VAR_U64;
-}
-
-/**
  * Return expect size in bytes of a VarType
  * @param type VarType to get size of.
  * @return size of type in bytes.
  */
-inline constexpr size_t SlVarSize(VarType type)
+inline constexpr size_t SlVarSize(VarMemType type)
 {
-	switch (GetVarMemType(type)) {
-		case SLE_VAR_BL: return sizeof(bool);
-		case SLE_VAR_I8: return sizeof(int8_t);
-		case SLE_VAR_U8: return sizeof(uint8_t);
-		case SLE_VAR_I16: return sizeof(int16_t);
-		case SLE_VAR_U16: return sizeof(uint16_t);
-		case SLE_VAR_I32: return sizeof(int32_t);
-		case SLE_VAR_U32: return sizeof(uint32_t);
-		case SLE_VAR_I64: return sizeof(int64_t);
-		case SLE_VAR_U64: return sizeof(uint64_t);
-		case SLE_VAR_NULL: return sizeof(void *);
-		case SLE_VAR_STR: return sizeof(std::string);
-		case SLE_VAR_STRQ: return sizeof(std::string);
-		case SLE_VAR_NAME: return sizeof(std::string);
+	switch (type) {
+		case VarMemType::Bool: return sizeof(bool);
+		case VarMemType::I8: return sizeof(int8_t);
+		case VarMemType::U8: return sizeof(uint8_t);
+		case VarMemType::I16: return sizeof(int16_t);
+		case VarMemType::U16: return sizeof(uint16_t);
+		case VarMemType::I32: return sizeof(int32_t);
+		case VarMemType::U32: return sizeof(uint32_t);
+		case VarMemType::I64: return sizeof(int64_t);
+		case VarMemType::U64: return sizeof(uint64_t);
+		case VarMemType::Null: return sizeof(void *);
+		case VarMemType::Str: return sizeof(std::string);
+		case VarMemType::StrQ: return sizeof(std::string);
+		case VarMemType::Name: return sizeof(std::string);
 		default: NOT_REACHED();
 	}
 }
@@ -806,16 +814,16 @@ namespace detail {
  * matches with the actual variable size, for primitive types.
  */
 template <typename TYPE>
-inline constexpr bool SlCheckPrimitiveTypeVar(VarType type)
+inline constexpr bool SlCheckPrimitiveTypeVar(VarMemType type)
 {
 	using T = typename std::remove_reference<TYPE>::type;
 
 	if (sizeof(T) != SlVarSize(type)) return false;
 
-	switch (GetVarMemType(type)) {
-		case SLE_VAR_STR:
-		case SLE_VAR_STRQ:
-		case SLE_VAR_NAME:
+	switch (type) {
+		case VarMemType::Str:
+		case VarMemType::StrQ:
+		case VarMemType::Name:
 			return std::is_same_v<T, std::string> || std::is_same_v<T, EncodedString>;
 
 		default:
@@ -855,7 +863,7 @@ inline constexpr bool SlCheckReferenceContainerType()
 }
 
 template <class T, template <class, class...> class U>
-inline constexpr bool SlCheckValueContainerType(VarType type)
+inline constexpr bool SlCheckValueContainerType(VarMemType type)
 {
 	if constexpr (SlIsContainerType<T, U>()) {
 		return SlCheckPrimitiveTypeVar<typename T::value_type>(type);
@@ -880,7 +888,7 @@ public:
  * matches with the actual variable size, for array types.
  */
 template <typename TYPE>
-inline constexpr bool SlCheckArrayTypeVar(VarType type, size_t length, bool top_level)
+inline constexpr bool SlCheckArrayTypeVar(VarMemType type, size_t length, bool top_level)
 {
 	using T = typename std::remove_reference<TYPE>::type;
 
@@ -908,7 +916,7 @@ inline constexpr bool SlCheckArrayTypeVar(VarType type, size_t length, bool top_
  * @return true iff the sizes match.
  */
 template <typename T>
-inline constexpr bool SlCheckVarSize(SaveLoadType cmd, VarType type, size_t length)
+inline constexpr bool SlCheckVarSize(SaveLoadType cmd, VarMemType type, size_t length)
 {
 	size_t size = sizeof(T);
 	switch (cmd) {
@@ -928,14 +936,14 @@ inline constexpr bool SlCheckVarSize(SaveLoadType cmd, VarType type, size_t leng
 	}
 }
 
-template <SaveLoadType cmd, VarType type, size_t length, typename T>
+template <SaveLoadType cmd, VarMemType type, size_t length, typename T>
 inline constexpr void *SlVarWrapper(void *ptr)
 {
 	static_assert(SlCheckVarSize<T>(cmd, type, length));
 	return ptr;
 }
 
-template <SaveLoadType cmd, VarType type, size_t length, typename T>
+template <SaveLoadType cmd, VarMemType type, size_t length, typename T>
 inline constexpr size_t SlVarWrapper(size_t offset)
 {
 	static_assert(SlCheckVarSize<T>(cmd, type, length));
@@ -956,7 +964,7 @@ inline constexpr size_t SlVarWrapper(size_t offset)
  * @note In general, it is better to use one of the SLE_* macros below.
  */
 #define SLE_GENERAL_NAME(cmd, name, base, variable, type, length, from, to, extra) \
-	SaveLoad {name, cmd, type, length, from, to, { .offset = SlVarWrapper<cmd, type, length, decltype(base::variable)>(cpp_offsetof(base, variable)) }, nullptr}
+	SaveLoad {name, cmd, SaveLoadFlags{}, type, length, from, to, { .offset = SlVarWrapper<cmd, VarType{type}.mem, length, decltype(base::variable)>(cpp_offsetof(base, variable)) }, nullptr}
 
 /**
  * Storage of simple variables, references (pointers), and arrays with a custom name.
@@ -1191,7 +1199,7 @@ inline constexpr size_t SlVarWrapper(size_t offset)
  * @param base     Name of the class or struct containing the variable.
  * @param variable Name of the variable in the class or struct referenced by \a base.
  */
-#define SLE_SAVEBYTE(base, variable) SLE_GENERAL(SaveLoadType::SaveByte, base, variable, 0, 0, SaveLoadVersion::MinVersion, SaveLoadVersion::MaxVersion, 0)
+#define SLE_SAVEBYTE(base, variable) SLE_GENERAL(SaveLoadType::SaveByte, base, variable, {}, 0, SaveLoadVersion::MinVersion, SaveLoadVersion::MaxVersion, 0)
 
 /**
  * Storage of global simple variables, references (pointers), and arrays.
@@ -1205,7 +1213,7 @@ inline constexpr size_t SlVarWrapper(size_t offset)
  * @note In general, it is better to use one of the SLEG_* macros below.
  */
 #define SLEG_GENERAL(name, cmd, variable, type, length, from, to, extra) \
-	SaveLoad {name, cmd, static_cast<VarType>(type) | static_cast<VarType>(SLF_GLOBAL), length, from, to, { .address = SlVarWrapper<cmd, type, length, decltype(variable)>(static_cast<void *>(std::addressof(variable))) }, nullptr}
+	SaveLoad {name, cmd, SaveLoadFlag::Global, type, length, from, to, { .address = SlVarWrapper<cmd, VarType{type}.mem, length, decltype(variable)>(static_cast<void *>(std::addressof(variable))) }, nullptr}
 
 /**
  * Storage of a global variable in some savegame versions.
@@ -1266,7 +1274,7 @@ inline constexpr size_t SlVarWrapper(size_t offset)
  * @param from     First savegame version that has the struct.
  * @param to       Last savegame version that has the struct.
  */
-#define SLEG_CONDSTRUCT(name, handler, from, to) SaveLoad {name, SaveLoadType::Struct, 0, 0, from, to, { .address = nullptr }, std::make_shared<handler>()}
+#define SLEG_CONDSTRUCT(name, handler, from, to) SaveLoad {name, SaveLoadType::Struct, SaveLoadFlags{}, {}, 0, from, to, { .address = nullptr }, std::make_shared<handler>()}
 
 /**
  * Storage of a global reference list in some savegame versions.
@@ -1305,7 +1313,7 @@ inline constexpr size_t SlVarWrapper(size_t offset)
  * @param from     First savegame version that has the list.
  * @param to       Last savegame version that has the list.
  */
-#define SLEG_CONDSTRUCTLIST(name, handler, from, to) SaveLoad {name, SaveLoadType::StructList, 0, 0, from, to, { .address = nullptr }, std::make_shared<handler>()}
+#define SLEG_CONDSTRUCTLIST(name, handler, from, to) SaveLoad {name, SaveLoadType::StructList, SaveLoadFlags{}, {}, 0, from, to, { .address = nullptr }, std::make_shared<handler>()}
 
 /**
  * Storage of a global variable in every savegame version.
@@ -1434,10 +1442,10 @@ inline bool IsSavegameVersionBeforeOrAt(SaveLoadVersion major)
 inline void *GetVariableAddress(const void *object, const SaveLoad &sld)
 {
 	/* Entry is a global address. */
-	if ((sld.conv & SLF_GLOBAL) != 0) return sld.address;
+	if (sld.flags.Test(SaveLoadFlag::Global)) return sld.address;
 
 	/* Entry is a null-variable, mostly used to read old savegames etc. */
-	if (GetVarMemType(sld.conv) == SLE_VAR_NULL) {
+	if (sld.conv.mem == VarMemType::Null) {
 		assert(sld.offset == 0);
 		return nullptr;
 	}
@@ -1447,8 +1455,8 @@ inline void *GetVariableAddress(const void *object, const SaveLoad &sld)
 	return const_cast<uint8_t *>((const uint8_t *)object + sld.offset);
 }
 
-int64_t ReadValue(const void *ptr, VarType conv);
-void WriteValue(void *ptr, VarType conv, int64_t val);
+int64_t ReadValue(const void *ptr, VarMemType conv);
+void WriteValue(void *ptr, VarMemType conv, int64_t val);
 
 void SlSetArrayIndex(uint index);
 

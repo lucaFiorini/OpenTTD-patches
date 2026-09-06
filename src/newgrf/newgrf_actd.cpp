@@ -259,7 +259,7 @@ static void ParamSet(ByteReader &buf)
 
 							/* Reserve space at the current sprite ID */
 							GrfMsg(4, "ParamSet: GRM: Allocated {} sprites at {}", count, _cur_gps.spriteid);
-							_grm_sprites[GRFLocation(_cur_gps.grffile->grfid, _cur_gps.nfo_line)] = std::make_pair(_cur_gps.spriteid, count);
+							_grm_sprites[GRFLocation{_cur_gps.grffile->grfid, _cur_gps.nfo_line}] = std::make_pair(_cur_gps.spriteid, count);
 							_cur_gps.spriteid += count;
 						}
 					}
@@ -293,7 +293,7 @@ static void ParamSet(ByteReader &buf)
 							switch (op) {
 								case 0: {
 									/* Return space reserved during reservation stage */
-									const auto &grm_alloc = _grm_sprites[GRFLocation(_cur_gps.grffile->grfid, _cur_gps.nfo_line)];
+									const auto &grm_alloc = _grm_sprites[GRFLocation{_cur_gps.grffile->grfid, _cur_gps.nfo_line}];
 									src1 = grm_alloc.first;
 									GrfMsg(4, "ParamSet: GRM: Using pre-allocated sprites at {} (count: {})", src1, grm_alloc.second);
 									break;
