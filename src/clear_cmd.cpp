@@ -59,7 +59,7 @@ static CommandCost ClearTile_Clear(TileIndex tile, DoCommandFlags flags)
 
 SpriteID GetSpriteIDForClearLand(const Slope slope, uint8_t density)
 {
-	return SPR_FLAT_BARE_LAND + SlopeToSpriteOffset(slope) + _clear_land_sprites_grass[density];
+	return _clear_land_sprites_grass[density] + SlopeToSpriteOffset(slope);
 }
 
 void DrawClearLandTile(const TileInfo *ti, uint8_t density)
