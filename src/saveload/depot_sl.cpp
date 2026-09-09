@@ -32,7 +32,7 @@ static const SaveLoad _depot_desc[] = {
 };
 
 struct DEPTChunkHandler : ChunkHandler {
-	DEPTChunkHandler() : ChunkHandler('DEPT', ChunkType::Table) {}
+	DEPTChunkHandler() : ChunkHandler("DEPT", ChunkType::Table) {}
 
 	void Save() const override
 	{

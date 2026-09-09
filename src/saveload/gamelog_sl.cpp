@@ -361,7 +361,7 @@ static const SaveLoad _gamelog_desc[] = {
 };
 
 struct GLOGChunkHandler : ChunkHandler {
-	GLOGChunkHandler() : ChunkHandler('GLOG', ChunkType::Table) {}
+	GLOGChunkHandler() : ChunkHandler("GLOG", ChunkType::Table) {}
 
 	void LoadCommon(std::vector<LoggedAction> &gamelog_actions) const
 	{

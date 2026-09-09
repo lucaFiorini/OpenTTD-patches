@@ -454,10 +454,15 @@ enum class ChunkType : uint8_t {
 
 /** Handlers and description of chunk. */
 struct ChunkHandler {
-	uint32_t id;                        ///< Unique ID (4 letters).
-	ChunkType type;                     ///< Type of the chunk. @see ChunkType
+	ChunkId id; ///< Unique ID (4 letters).
+	ChunkType type; ///< Type of the chunk. @see ChunkType
 
-	ChunkHandler(uint32_t id, ChunkType type) : id(id), type(type) {}
+	/**
+	 * Create this ChunkHandler.
+	 * @param id The unique identifier/name of this chunk.
+	 * @param type The type of chunk
+	 */
+	ChunkHandler(ChunkId id, ChunkType type) : id(id), type(type) {}
 
 	virtual ~ChunkHandler() = default;
 
@@ -487,6 +492,15 @@ struct ChunkHandler {
 	 * @param len Number of bytes to skip.
 	 */
 	virtual void LoadCheck(size_t len = 0) const;
+
+	/**
+	 * Get the name of this chunk.
+	 * @return The chunks 4 letter name/unique identifier.
+	 */
+	std::string GetName() const
+	{
+		return this->id.AsString();
+	}
 };
 
 /** A reference to ChunkHandler. */

@@ -27,7 +27,7 @@ static const SaveLoad _animated_tile_desc[] = {
 };
 
 struct ANITChunkHandler : ChunkHandler {
-	ANITChunkHandler() : ChunkHandler('ANIT', ChunkType::Table) {}
+	ANITChunkHandler() : ChunkHandler("ANIT", ChunkType::Table) {}
 
 	void Save() const override
 	{

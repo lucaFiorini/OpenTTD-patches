@@ -11,6 +11,7 @@
 #define SL_SAVELOAD_COMMON_H
 
 #include "../strings_id_type.h"
+#include "../core/label_type.hpp"
 
 template <typename T>
 concept SlIsPrimitiveType = T::saveload_primitive_type || false;
@@ -28,6 +29,9 @@ namespace upstream_sl {
 	/** A table of SaveLoad entries. */
 	using SaveLoadTable = std::span<const SaveLoad>;
 }
+
+/** Label/unique identifier for each of the chunks in the savegame. */
+using ChunkId = Label<struct ChunkIdTag>;
 
 /** SaveLoad versions
  * Previous savegame versions, the trunk revision where they were

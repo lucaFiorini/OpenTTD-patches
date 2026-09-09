@@ -164,13 +164,23 @@ struct SaveUpstreamFeatureConditionalLoadUpstreamChunkInfo
 	}
 };
 
+inline ChunkId ChunkIdAsLabel(uint32_t id)
+{
+	ChunkId label{};
+	label[0] = static_cast<uint8_t>(id >> 24);
+	label[1] = static_cast<uint8_t>(id >> 16);
+	label[2] = static_cast<uint8_t>(id >> 8);
+	label[3] = static_cast<uint8_t>(id);
+	return label;
+}
+
 namespace upstream_sl {
 	template <uint32_t id, typename F>
 	ChunkHandler MakeUpstreamChunkHandler()
 	{
-		extern void SlLoadChunkByID(uint32_t);
-		extern void SlLoadCheckChunkByID(uint32_t);
-		extern void SlFixPointerChunkByID(uint32_t);
+		extern void SlLoadChunkByID(ChunkId);
+		extern void SlLoadCheckChunkByID(ChunkId);
+		extern void SlFixPointerChunkByID(ChunkId);
 
 		ChunkHandler ch = {
 			id,
@@ -185,17 +195,17 @@ namespace upstream_sl {
 			switch (op) {
 				case CSLSO_PRE_LOAD:
 					SlExecWithSlVersion(F::GetLoadVersion(), []() {
-						SlLoadChunkByID(id);
+						SlLoadChunkByID(ChunkIdAsLabel(id));
 					});
 					return CSLSOR_LOAD_CHUNK_CONSUMED;
 				case CSLSO_PRE_LOADCHECK:
 					SlExecWithSlVersion(F::GetLoadVersion(), []() {
-						SlLoadCheckChunkByID(id);
+						SlLoadCheckChunkByID(ChunkIdAsLabel(id));
 					});
 					return CSLSOR_LOAD_CHUNK_CONSUMED;
 				case CSLSO_PRE_PTRS:
 					SlExecWithSlVersion(F::GetLoadVersion(), []() {
-						SlFixPointerChunkByID(id);
+						SlFixPointerChunkByID(ChunkIdAsLabel(id));
 					});
 					return CSLSOR_LOAD_CHUNK_CONSUMED;
 				case CSLSO_PRE_NULL_PTRS:
@@ -212,9 +222,9 @@ namespace upstream_sl {
 	template <uint32_t id, typename F>
 	ChunkHandler MakeConditionallyUpstreamChunkHandler(ChunkSaveLoadProc *save_proc, ChunkSaveLoadProc *load_proc, ChunkSaveLoadProc *ptrs_proc, ChunkSaveLoadProc *load_check_proc, ChunkType type)
 	{
-		extern void SlLoadChunkByID(uint32_t);
-		extern void SlLoadCheckChunkByID(uint32_t);
-		extern void SlFixPointerChunkByID(uint32_t);
+		extern void SlLoadChunkByID(ChunkId);
+		extern void SlLoadCheckChunkByID(ChunkId);
+		extern void SlFixPointerChunkByID(ChunkId);
 
 		ChunkHandler ch = {
 			id,
@@ -230,19 +240,19 @@ namespace upstream_sl {
 				case CSLSO_PRE_LOAD:
 					if (!F::LoadUpstream()) return CSLSOR_NONE;
 					SlExecWithSlVersion(F::GetLoadVersion(), []() {
-						SlLoadChunkByID(id);
+						SlLoadChunkByID(ChunkIdAsLabel(id));
 					});
 					return CSLSOR_LOAD_CHUNK_CONSUMED;
 				case CSLSO_PRE_LOADCHECK:
 					if (!F::LoadUpstream()) return CSLSOR_NONE;
 					SlExecWithSlVersion(F::GetLoadVersion(), []() {
-						SlLoadCheckChunkByID(id);
+						SlLoadCheckChunkByID(ChunkIdAsLabel(id));
 					});
 					return CSLSOR_LOAD_CHUNK_CONSUMED;
 				case CSLSO_PRE_PTRS:
 					if (!F::LoadUpstream()) return CSLSOR_NONE;
 					SlExecWithSlVersion(F::GetLoadVersion(), []() {
-						SlFixPointerChunkByID(id);
+						SlFixPointerChunkByID(ChunkIdAsLabel(id));
 					});
 					return CSLSOR_LOAD_CHUNK_CONSUMED;
 				case CSLSO_PRE_NULL_PTRS:

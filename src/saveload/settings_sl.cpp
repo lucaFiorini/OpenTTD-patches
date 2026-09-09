@@ -193,7 +193,7 @@ static void SaveSettings(void *object)
 }
 
 struct PATSChunkHandler : ChunkHandler {
-	PATSChunkHandler() : ChunkHandler('PATS', ChunkType::Table) {}
+	PATSChunkHandler() : ChunkHandler("PATS", ChunkType::Table) {}
 
 	void Load() const override
 	{
