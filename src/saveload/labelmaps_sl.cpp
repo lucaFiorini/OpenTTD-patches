@@ -64,6 +64,8 @@ struct RAILChunkHandler : ChunkHandler {
 
 		while (SlIterateArray() != -1) {
 			SlObject(&lo, slt);
+			/* Temporary */
+			if (!IsSavegameVersionBefore(SaveLoadVersion::LabelOrientationUnification)) lo.label = std::byteswap(lo.label);
 			_railtype_list.push_back(lo);
 		}
 	}
@@ -102,6 +104,8 @@ struct ROTTChunkHandler : ChunkHandler {
 
 		while (SlIterateArray() != -1) {
 			SlObject(&lo, slt);
+			/* Temporary */
+			if (!IsSavegameVersionBefore(SaveLoadVersion::LabelOrientationUnification)) lo.label = std::byteswap(lo.label);
 			_roadtype_list.push_back(lo);
 		}
 	}
