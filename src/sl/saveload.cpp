@@ -3952,7 +3952,7 @@ static SaveLoadResult SaveFileToDisk(bool threaded)
 		/* We have written our stuff to memory, now write it to file! */
 		_sl.sf->Write(fmt->tag.data(), fmt->tag.size());
 
-		uint32_t version = TO_BE32(to_underlying(SAVEGAME_VERSION) << 16);
+		uint32_t version = TO_BE32((uint32_t) (SAVEGAME_VERSION | SAVEGAME_VERSION_EXT) << 16);
 		_sl.sf->Write(reinterpret_cast<uint8_t *>(&version), sizeof(version));
 
 		_sl.sf = fmt->init_write(_sl.sf, compression);
