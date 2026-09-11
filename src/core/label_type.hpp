@@ -10,6 +10,8 @@
 #ifndef LABEL_TYPE_HPP
 #define LABEL_TYPE_HPP
 
+#include <array>
+
 /** Base for a four character label/tag/id. */
 struct BaseLabel : std::array<uint8_t, 4> {
 	/**
