@@ -28,7 +28,7 @@
 #include "newgrf_type.h"
 #include "network/network.h"
 #include "core/alignment.hpp"
-#include "sl/saveload_common.h"
+#include "sl/saveload_common_type.h"
 #include <array>
 #include <vector>
 

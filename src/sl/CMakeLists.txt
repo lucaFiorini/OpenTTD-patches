@@ -38,6 +38,7 @@ add_files(
     saveload.h
     saveload_buffer.h
     saveload_common.h
+    saveload_common_type.h
     saveload_filter.h
     saveload_internal.h
     saveload_types.h
