@@ -11,6 +11,7 @@
 #define SL_SAVELOAD_COMMON_H
 
 #include "saveload_common_type.h"
+#include "saveload_common_error.h"
 #include "../strings_id_type.h"
 #include "../core/label_type.hpp"
 
@@ -500,7 +501,6 @@ void SlCopyBytesWrite(const void *ptr, size_t length);
 size_t SlGetBytesRead();
 size_t SlGetBytesWritten();
 
-[[noreturn]] void SlError(StringID string, std::string extra_msg = {});
 [[noreturn]] void SlErrorCorrupt(std::string msg);
 
 #define SlErrorCorruptFmt(format_string, ...) SlErrorCorrupt(fmt::format(FMT_STRING(format_string) __VA_OPT__(,) __VA_ARGS__))

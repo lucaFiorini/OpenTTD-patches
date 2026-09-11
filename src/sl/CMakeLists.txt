@@ -38,8 +38,10 @@ add_files(
     saveload.h
     saveload_buffer.h
     saveload_common.h
+    saveload_common_error.h
     saveload_common_type.h
     saveload_filter.h
+    saveload_func.h
     saveload_internal.h
     saveload_types.h
     signal_sl.cpp

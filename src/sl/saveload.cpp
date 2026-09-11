@@ -70,6 +70,7 @@
 
 #include "saveload_internal.h"
 #include "saveload_filter.h"
+#include "saveload_func.h"
 #include "saveload_buffer.h"
 #include "extended_ver_sl.h"
 

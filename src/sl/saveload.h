@@ -27,24 +27,6 @@
 
 class TinyString;
 
-/** Save or load result codes. */
-enum class SaveLoadResult : uint8_t {
-	Ok, ///< completed successfully
-	Error, ///< error that was caught before internal structures were modified
-	ReInit, ///< error that was caught in the middle of updating game state, need to clear it. (can only happen during load)
-};
-
-/** Deals with the type of the savegame, independent of extension */
-struct FileToSaveLoad {
-	SaveLoadOperation file_op;       ///< File operation to perform.
-	FiosType ftype;                  ///< File type.
-	std::string name;                ///< Name of the file.
-	EncodedString title;             ///< Internal name of the game.
-
-	void SetMode(const FiosType &ft, SaveLoadOperation fop = SaveLoadOperation::Load);
-	void Set(const FiosItem &item);
-};
-
 /** Types of save games. */
 enum class SavegameType : uint8_t {
 	TTD,            ///< TTD savegame (can be detected incorrectly)
@@ -55,29 +37,8 @@ enum class SavegameType : uint8_t {
 	Invalid = 0xFF, ///< broken savegame (used internally)
 };
 
-enum SaveModeFlags : uint8_t {
-	SMF_NONE             = 0,
-	SMF_NET_SERVER       = 1 << 0, ///< Network server save
-	SMF_ZSTD_OK          = 1 << 1, ///< Zstd OK
-	SMF_SCENARIO         = 1 << 2, ///< Scenario save
-};
-DECLARE_ENUM_AS_BIT_SET(SaveModeFlags);
-
-extern FileToSaveLoad _file_to_saveload;
-
-std::string GenerateDefaultSaveName();
 void SetSaveLoadError(StringID str);
-EncodedString GetSaveLoadErrorType();
-EncodedString GetSaveLoadErrorMessage();
-SaveLoadResult SaveOrLoad(const std::string &filename, SaveLoadOperation fop, DetailedFileType dft, Subdirectory sb, bool threaded = true, SaveModeFlags flags = SMF_NONE);
-void WaitTillSaved();
-void ProcessAsyncSaveFinish();
-void DoExitSave();
 
-void DoAutoOrNetsave(FiosNumberedSaveName &counter, bool threaded, FiosNumberedSaveName *lt_counter = nullptr);
-
-SaveLoadResult SaveWithFilter(std::shared_ptr<struct SaveFilter> writer, bool threaded, SaveModeFlags flags);
-SaveLoadResult LoadWithFilter(std::shared_ptr<struct LoadFilter> reader);
 bool IsNetworkServerSave();
 bool IsScenarioSave();
 
@@ -1239,8 +1200,6 @@ inline void SlLoadTableOrRiffFiltered(const NamedSaveLoadTable &slt, void *objec
 	SlLoadTableOrRiffFiltered(SlTableHeaderOrRiff(slt), object);
 }
 
-bool SaveloadCrashWithMissingNewGRFs();
-
 void SlResetVENC();
 void SlProcessVENC();
 
@@ -1250,6 +1209,5 @@ void SlResetERNC();
 void SlProcessERNC();
 
 extern std::string _savegame_format;
-extern bool _do_autosave;
 
 #endif /* SL_SAVELOAD_H */
