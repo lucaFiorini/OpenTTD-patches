@@ -10,24 +10,16 @@
 #ifndef SL_SAVELOAD_COMMON_H
 #define SL_SAVELOAD_COMMON_H
 
+#include "saveload_common_type.h"
+#include "saveload_common_error.h"
 #include "../strings_id_type.h"
+#include "../core/label_type.hpp"
 
 template <typename T>
 concept SlIsPrimitiveType = T::saveload_primitive_type || false;
 
-struct SaveLoad;
-struct NamedSaveLoad;
-
-/** A table of SaveLoad entries. */
-using SaveLoadTable = std::span<const SaveLoad>;
-using NamedSaveLoadTable = std::span<const NamedSaveLoad>;
-
-namespace upstream_sl {
-	struct SaveLoad;
-
-	/** A table of SaveLoad entries. */
-	using SaveLoadTable = std::span<const SaveLoad>;
-}
+/** Label/unique identifier for each of the chunks in the savegame. */
+using ChunkId = Label<struct ChunkIdTag>;
 
 /** SaveLoad versions
  * Previous savegame versions, the trunk revision where they were
@@ -435,6 +427,9 @@ enum SaveLoadVersion : uint16_t {
 	SLV_DRIVE_BACKWARDS,                    ///< 365  PR#15379 Trains can drive backwards.
 	SLV_DEPOTS_UNDER_BRIDGES,               ///< 366  PR#15836 Allow depots under bridges.
 
+	/* Upstream load only */
+	SLV_LABEL_ORIENTATION_UNIFICATION,      ///< 367  PR#15888 Unify the orientation in which labels are written.
+
 	SL_MAX_VERSION,                         ///< Highest possible saveload version
 
 	SL_SPRING_2013_v2_0_102 = 220,
@@ -464,7 +459,9 @@ enum SaveLoadVersion : uint16_t {
 
 static constexpr SaveLoadVersion SAVEGAME_VERSION = SLV_CUSTOM_SUBSIDY_DURATION;                    ///< Current savegame version of OpenTTD.
 static constexpr SaveLoadVersion MAX_LOAD_SAVEGAME_VERSION = (SaveLoadVersion)(SL_MAX_VERSION - 1); ///< Max loadable savegame version of OpenTTD.
-static constexpr SaveLoadVersion SL_UPSTREAM_VERSION = MAX_LOAD_SAVEGAME_VERSION;                   ///< Savegame version to save/load in XSLFI_UPSTREAM_VERSION sub-chunk
+
+/* Temporary before label endianness changes, instead of MAX_LOAD_SAVEGAME_VERSION. */
+static constexpr SaveLoadVersion SL_UPSTREAM_VERSION = SLV_DEPOTS_UNDER_BRIDGES;                    ///< Savegame version to save/load in XSLFI_UPSTREAM_VERSION sub-chunk
 
 uint8_t SlReadByte();
 void SlReadString(std::string &str, size_t length);
@@ -504,7 +501,6 @@ void SlCopyBytesWrite(const void *ptr, size_t length);
 size_t SlGetBytesRead();
 size_t SlGetBytesWritten();
 
-[[noreturn]] void SlError(StringID string, std::string extra_msg = {});
 [[noreturn]] void SlErrorCorrupt(std::string msg);
 
 #define SlErrorCorruptFmt(format_string, ...) SlErrorCorrupt(fmt::format(FMT_STRING(format_string) __VA_OPT__(,) __VA_ARGS__))

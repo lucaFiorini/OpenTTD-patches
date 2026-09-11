@@ -47,7 +47,7 @@ static const SaveLoad _engine_desc[] = {
 };
 
 struct ENGNChunkHandler : ChunkHandler {
-	ENGNChunkHandler() : ChunkHandler('ENGN', ChunkType::Table) {}
+	ENGNChunkHandler() : ChunkHandler("ENGN", ChunkType::Table) {}
 
 	void Save() const override
 	{
@@ -91,7 +91,7 @@ static const SaveLoad _engine_id_mapping_desc[] = {
 };
 
 struct EIDSChunkHandler : ChunkHandler {
-	EIDSChunkHandler() : ChunkHandler('EIDS', ChunkType::Table) {}
+	EIDSChunkHandler() : ChunkHandler("EIDS", ChunkType::Table) {}
 
 	void Save() const override
 	{

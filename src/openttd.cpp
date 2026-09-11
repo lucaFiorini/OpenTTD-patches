@@ -25,6 +25,7 @@
 #include "base_media_music.h"
 #include "base_media_sounds.h"
 #include "sl/saveload.h"
+#include "sl/saveload_func.h"
 #include "company_cmd.h"
 #include "company_func.h"
 #include "company_gui.h"

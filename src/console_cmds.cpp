@@ -14,7 +14,7 @@
 #include "debug.h"
 #include "engine_func.h"
 #include "landscape.h"
-#include "sl/saveload.h"
+#include "sl/saveload_func.h"
 #include "network/core/network_game_info.h"
 #include "network/network.h"
 #include "network/network_func.h"

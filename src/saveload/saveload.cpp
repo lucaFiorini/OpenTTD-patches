@@ -188,11 +188,22 @@ void SlNullPointers()
 	_sl_version = MAX_LOAD_SAVEGAME_VERSION;
 
 	for (const ChunkHandler &ch : ChunkHandlers()) {
-		Debug(sl, 3, "Nulling pointers for {:c}{:c}{:c}{:c}", ch.id >> 24, ch.id >> 16, ch.id >> 8, ch.id);
+		Debug(sl, 3, "Nulling pointers for {}", ch.id.AsString());
 		ch.FixPointers();
 	}
 
 	assert(_sl.action == SaveLoadAction::Null);
+}
+
+/**
+ * Read the \c ChunkId.
+ * @return The read \c ChunkId.
+ */
+static inline ChunkId SlReadChunkId()
+{
+	ChunkId label{};
+	for (uint8_t &b : label) b = SlReadByte();
+	return label;
 }
 
 /**
@@ -2188,7 +2199,7 @@ static void SlLoadCheckChunk(const ChunkHandler &ch)
  * @param id the chunk in question
  * @return returns the appropriate chunkhandler
  */
-static const ChunkHandler *SlFindChunkHandler(uint32_t id)
+static const ChunkHandler *SlFindChunkHandler(ChunkId id)
 {
 	for (const ChunkHandler &ch : ChunkHandlers()) if (ch.id == id) return &ch;
 	return nullptr;
@@ -2199,24 +2210,21 @@ void SlLoadChunks()
 {
 	_sl.action = SaveLoadAction::Load;
 
-	uint32_t id;
-	const ChunkHandler *ch;
+	for (ChunkId id = SlReadChunkId(); !id.Empty(); id = SlReadChunkId()) {
+		Debug(sl, 2, "Loading chunk {}", id.AsString());
 
-	for (id = SlReadUint32(); id != 0; id = SlReadUint32()) {
-		Debug(sl, 2, "Loading chunk {:c}{:c}{:c}{:c}", id >> 24, id >> 16, id >> 8, id);
-
-		ch = SlFindChunkHandler(id);
+		const ChunkHandler *ch = SlFindChunkHandler(id);
 		if (ch == nullptr) SlErrorCorrupt("Unknown chunk type");
 		SlLoadChunk(*ch);
 	}
 }
 
 /** Load a chunk */
-void SlLoadChunkByID(uint32_t id)
+void SlLoadChunkByID(ChunkId id)
 {
 	_sl.action = SaveLoadAction::Load;
 
-	Debug(sl, 2, "Loading chunk {:c}{:c}{:c}{:c}", id >> 24, id >> 16, id >> 8, id);
+	Debug(sl, 2, "Loading chunk {}", id.AsString());
 
 	const ChunkHandler *ch = SlFindChunkHandler(id);
 	if (ch == nullptr) SlErrorCorrupt("Unknown chunk type");
@@ -2228,24 +2236,21 @@ void SlLoadCheckChunks()
 {
 	_sl.action = SaveLoadAction::LoadCheck;
 
-	uint32_t id;
-	const ChunkHandler *ch;
+	for (ChunkId id = SlReadChunkId(); !id.Empty(); id = SlReadChunkId()) {
+		Debug(sl, 2, "Loading chunk {}", id.AsString());
 
-	for (id = SlReadUint32(); id != 0; id = SlReadUint32()) {
-		Debug(sl, 2, "Loading chunk {:c}{:c}{:c}{:c}", id >> 24, id >> 16, id >> 8, id);
-
-		ch = SlFindChunkHandler(id);
+		const ChunkHandler *ch = SlFindChunkHandler(id);
 		if (ch == nullptr) SlErrorCorrupt("Unknown chunk type");
 		SlLoadCheckChunk(*ch);
 	}
 }
 
 /** Load a chunk for savegame checking */
-void SlLoadCheckChunkByID(uint32_t id)
+void SlLoadCheckChunkByID(ChunkId id)
 {
 	_sl.action = SaveLoadAction::LoadCheck;
 
-	Debug(sl, 2, "Loading chunk {:c}{:c}{:c}{:c}", id >> 24, id >> 16, id >> 8, id);
+	Debug(sl, 2, "Loading chunk {}", id.AsString());
 
 	const ChunkHandler *ch = SlFindChunkHandler(id);
 	if (ch == nullptr) SlErrorCorrupt("Unknown chunk type");
@@ -2258,30 +2263,30 @@ void SlFixPointers()
 	_sl.action = SaveLoadAction::Ptrs;
 
 	for (const ChunkHandler &ch : ChunkHandlers()) {
-		Debug(sl, 3, "Fixing pointers for {:c}{:c}{:c}{:c}", ch.id >> 24, ch.id >> 16, ch.id >> 8, ch.id);
+		Debug(sl, 3, "Fixing pointers for {}", ch.GetName());
 		ch.FixPointers();
 	}
 
 	assert(_sl.action == SaveLoadAction::Ptrs);
 }
 
-void SlFixPointerChunkByID(uint32_t id)
+void SlFixPointerChunkByID(ChunkId id)
 {
 	_sl.action = SaveLoadAction::Ptrs;
 
 	const ChunkHandler *ch = SlFindChunkHandler(id);
 	if (ch == nullptr) SlErrorCorrupt("Unknown chunk type");
-	Debug(sl, 3, "Fixing pointers for {:c}{:c}{:c}{:c}", ch->id >> 24, ch->id >> 16, ch->id >> 8, ch->id);
+	Debug(sl, 3, "Fixing pointers for {}", ch->GetName());
 	ch->FixPointers();
 }
 
-void SlNullPointerChunkByID(uint32_t id)
+void SlNullPointerChunkByID(ChunkId id)
 {
 	_sl.action = SaveLoadAction::Null;
 
 	const ChunkHandler *ch = SlFindChunkHandler(id);
 	if (ch == nullptr) SlErrorCorrupt("Unknown chunk type");
-	Debug(sl, 3, "Nulling pointers for {:c}{:c}{:c}{:c}", ch->id >> 24, ch->id >> 16, ch->id >> 8, ch->id);
+	Debug(sl, 3, "Nulling pointers for {}", ch->GetName());
 	ch->FixPointers();
 }
 
@@ -2294,8 +2299,8 @@ static void SlSaveChunk(const ChunkHandler &ch)
 {
 	if (ch.type == ChunkType::ReadOnly) return;
 
-	SlWriteUint32(ch.id);
-	Debug(sl, 2, "Saving chunk {:c}{:c}{:c}{:c}", ch.id >> 24, ch.id >> 16, ch.id >> 8, ch.id);
+	for (uint8_t b : ch.id) SlWriteByte(b);
+	Debug(sl, 2, "Saving chunk {}", ch.id.AsString());
 
 	_sl.chunk_type = ch.type;
 	_sl.expect_table_header = (_sl.chunk_type == ChunkType::Table || _sl.chunk_type == ChunkType::SparseTable);
@@ -2326,7 +2331,7 @@ static void SlSaveChunk(const ChunkHandler &ch)
 }
 
 /** Save a chunk of data */
-void SlSaveChunkChunkByID(uint32_t id)
+void SlSaveChunkChunkByID(ChunkId id)
 {
 	const ChunkHandler *ch = SlFindChunkHandler(id);
 	if (ch == nullptr) SlErrorCorrupt("Unknown chunk type");

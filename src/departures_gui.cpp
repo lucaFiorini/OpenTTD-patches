@@ -1004,30 +1004,26 @@ void DeparturesWindow::RecomputeDateWidth()
 	cached_status_width = std::max((GetStringBoundingBox(STR_DEPARTURES_CANCELLED)).width, cached_status_width);
 	cached_status_width = std::max((GetStringBoundingBox(STR_DEPARTURES_SCHEDULED)).width, cached_status_width);
 
-	auto eval_tick = [&](StringID tick_display_string, int64_t tick) {
-		auto params = MakeParameters(
-				TextColour::Orange,
-				tick_display_string,
-				tick,
-				TextColour::Orange,
-				tick_display_string,
-				tick);
-
-		cached_date_width = std::max(GetStringBoundingBox(GetStringWithArgs(STR_DEPARTURES_TIME, params)).width, cached_date_width);
-		PrepareArgsForNextRun(params);
-		cached_date_combined_width = std::max(GetStringBoundingBox(GetStringWithArgs(STR_DEPARTURES_TIME_BOTH, params)).width, cached_date_combined_width);
-
-		cached_status_width = std::max(GetStringBoundingBox(GetString(STR_DEPARTURES_EXPECTED, STR_JUST_TT_TIME_ABS, tick)).width, cached_status_width);
-	};
-
+	format_buffer_sized<64> date_buf;
 	if (_settings_time.time_in_minutes) {
-		eval_tick(STR_JUST_TIME_HHMM, (GetBroadestHourDigitsValue() * 100) + GetParamMaxDigits(2));
+		AppendStringInPlace(date_buf, STR_JUST_TIME_HHMM, (GetBroadestHourDigitsValue() * 100) + GetParamMaxDigits(2));
 	} else if (!CalTime::IsCalendarFrozen()) {
 		/* If the calendar is frozen, all dates are the same, so just don't show anything */
-		for (uint i = 0; i < 365; ++i) {
-			eval_tick(STR_JUST_TT_TIME_ABS, INT_MAX - (i * DAY_TICKS));
-		}
+		AppendWidestTinyOrIsoCalendarDate(date_buf, false);
 	}
+
+	auto params = MakeParameters(
+			TextColour::Orange,
+			STR_JUST_RAW_STRING,
+			std::string_view{date_buf},
+			TextColour::Orange,
+			STR_JUST_RAW_STRING,
+			std::string_view{date_buf});
+	cached_date_width = std::max(GetStringBoundingBox(GetStringWithArgs(STR_DEPARTURES_TIME, params)).width, cached_date_width);
+	PrepareArgsForNextRun(params);
+	cached_date_combined_width = std::max(GetStringBoundingBox(GetStringWithArgs(STR_DEPARTURES_TIME_BOTH, params)).width, cached_date_combined_width);
+
+	cached_status_width = std::max(GetStringBoundingBox(GetString(STR_DEPARTURES_EXPECTED, STR_JUST_RAW_STRING, std::string_view{date_buf})).width, cached_status_width);
 
 	auto get_tick_zero_width = [&](StringID str) {
 		return GetStringBoundingBox(GetString(str, STR_JUST_TT_TIME_ABS, 0)).width;

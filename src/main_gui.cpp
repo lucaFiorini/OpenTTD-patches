@@ -36,7 +36,7 @@
 #include "news_gui.h"
 #include "misc_cmd.h"
 
-#include "sl/saveload.h"
+#include "sl/saveload_func.h"
 
 #include "widgets/main_widget.h"
 
